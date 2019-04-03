@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Setup the default directory
+
+mkdir -p /var/www/etc
+mkdir -p /var/www/share
+
+chown www-data:www-data /var/www -R

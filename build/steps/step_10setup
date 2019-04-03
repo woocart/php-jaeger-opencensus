@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -e
+
+apt update
+apt install locales apt-utils wget gnupg2 less tar gzip unzip curl nano mime-support -y
+locale-gen en_US.UTF-8
+apt full-upgrade -y

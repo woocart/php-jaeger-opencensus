@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2046,SC2086,SC2035
+set -e
+
+add-ppa-repository nginx/stable
+apt install nginx-full -y
+
+chown www-data:www-data -R /etc/nginx

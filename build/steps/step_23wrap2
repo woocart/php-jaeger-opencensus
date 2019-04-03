@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Process runner and manager
+
+
+wget https://github.com/dz0ny/wrap2/releases/download/v1.2.2/wrap2-Linux-x86_64 -O /sbin/wrap2
+chmod +x /sbin/wrap2

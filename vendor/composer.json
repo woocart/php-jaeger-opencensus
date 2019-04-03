@@ -1,0 +1,7 @@
+{
+    "require": {
+        "opencensus/opencensus": "^0.5.2",
+        "opencensus/opencensus-exporter-jaeger": "~0.1"
+    },
+    "minimum-stability": "stable"
+}

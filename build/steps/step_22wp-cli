@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -e
+
+# CLI for WordPress
+
+apt install mysql-client jq -y
+wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O /sbin/wp-cli
+chmod +x /sbin/wp-cli

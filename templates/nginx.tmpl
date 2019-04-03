@@ -1,0 +1,129 @@
+worker_processes 1;
+user www-data;
+daemon off;
+
+include /etc/nginx/modules-enabled/*.conf;
+worker_rlimit_nofile 8192;
+error_log /dev/stderr warn;
+
+events {
+    worker_connections 8192;
+    multi_accept on;
+}
+
+http {
+
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    # Speed up file transfer by using sendfile().
+    sendfile on;
+
+    # Don't send partial frames, which increases throughput.
+    tcp_nopush on;
+
+    # Don't wait to send data in keep-alive state.
+    tcp_nodelay on;
+
+    # Hide version in server response
+    server_tokens off;
+
+    # How long each connection should stay open for.
+    keepalive_timeout 15;
+
+    # Timeout for reading client request body.
+    client_body_timeout 600s;
+
+    # Timeout for reading client request header.
+    client_header_timeout 600s;
+
+    # Timeout for transmitting response to client.
+    send_timeout 600s;
+
+    # Enable event loop for async processing of file requests
+    aio threads;
+
+    proxy_connect_timeout  300s;
+    proxy_send_timeout  300s;
+    proxy_read_timeout  300s;
+    fastcgi_send_timeout 300s;
+    fastcgi_read_timeout 300s;
+
+    ## Static files fopen caching
+    open_file_cache max=2000 inactive=20s;
+    open_file_cache_valid 60s;
+    open_file_cache_min_uses 5;
+    open_file_cache_errors off;
+    uninitialized_variable_warn off;
+
+    # Set the maximum allowed size of client request body. This should be set
+    # to the value of files sizes you wish to upload to the WordPress Media Library.
+    # You may also need to change the values `upload_max_filesize` and `post_max_size` within
+    # your php.ini for the changes to apply.
+    client_max_body_size 200m;
+
+
+    fastcgi_ignore_headers Cache-Control Expires Set-Cookie;
+    fastcgi_pass_header Set-Cookie;
+    fastcgi_pass_header Cookie;
+
+    map $upstream_response_time $php_response_time {
+        default   $upstream_response_time;
+        ""        0;
+    }
+
+    log_format json_combined escape=json '{ '
+        '"host": "$host", '
+        '"remote_addr": "$remote_addr", '
+        '"request_uri": "$request_uri", '
+        '"request_length": $request_length, '
+        '"status": $status, '
+        '"request_method": "$request_method", '
+        '"body_bytes_sent": $body_bytes_sent, '
+        '"http_referrer": "$http_referer", '
+        '"request_time": "$request_time", '
+        '"php_response_time": "$php_response_time", '
+        '"http_user_agent": "$http_user_agent"'
+    '}';
+
+    server {
+
+        server_name _ localhost;
+
+        index start.html index.html index.php;
+
+        root /var/www/public_html;
+
+        error_log /dev/stderr warn;
+        access_log /dev/stdout json_combined;
+
+        location / {
+            try_files $uri $uri/ /index.php?q=$uri&$args;
+        }
+
+        # default handling of .php
+        location ~ \.php {
+            include /etc/nginx/fastcgi_params;
+
+            try_files $uri =404;
+
+            fastcgi_buffers 8 16k;
+            fastcgi_buffer_size 32k;
+            fastcgi_split_path_info ^(.+\.php)(/.+)$;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+
+            fastcgi_param HTTP_HOST $host;
+            fastcgi_index index.php;
+
+            fastcgi_pass_header Set-Cookie;
+            fastcgi_pass_header Cookie;
+
+            fastcgi_pass unix:/tmp/wordpress.sock;
+        }
+
+
+
+    }
+
+}

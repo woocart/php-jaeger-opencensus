@@ -1,0 +1,17 @@
+[pre_start]
+  cmd = "/bin/bash /vendor/wordpress.sh"
+  user = "www-data"
+
+[[process]]
+  cmd = "php-fpm7.2 -y /tmp/php-fpm.conf"
+  [process.config]
+    src = "/templates/php-fpm.tmpl"
+    dst = "/tmp/php-fpm.conf"
+    user = "www-data"
+
+[[process]]
+  cmd = "nginx -c /tmp/nginx.conf"
+  [process.config]
+    src = "/templates/nginx.tmpl"
+    dst = "/tmp/nginx.conf"
+    user = "www-data"

@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+# Fail fast and fail hard.
+set -eo pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+BIN_DIR=$(cd "$(dirname "$0")"; pwd) # absolute path
+
+# Adds PPA to sources.list
+# Usage: $ add-ppa-repository "foo/nginx"
+add-ppa-repository(){
+
+	url="deb http://ppa.launchpad.net/$1/ubuntu bionic main"
+	echo "Adding repository $url"
+	echo "$url" >> /etc/apt/sources.list
+
+    tmp_file="/tmp/$( echo "$url" | md5sum | cut -f1 -d" ")"
+	apt update > /dev/null 2> "$tmp_file" || true
+	if grep -q NO_PUBKEY "$tmp_file"; then
+	    echo "Public key to add :"
+	    < "$tmp_file" grep NO_PUBKEY | sed -E "s/^.*NO_PUBKEY (.+)$/\1/" | xargs -i echo "- " {}
+	    < "$tmp_file" grep NO_PUBKEY | sed -E "s/^.*NO_PUBKEY (.+)$/\1/" | xargs -i apt-key adv --keyserver keyserver.ubuntu.com --recv-key {}
+	fi
+	rm -rf "$tmp_file"
+	apt update
+}
+
+
+for f in "$BIN_DIR"/steps/step_*; do source "$f"; done
+
+rm -rf \
+   /var/cache/debconf/* \
+   /var/lib/apt/lists/* \
+   /var/log/* \
+   /tmp/* \
+   /var/tmp/*

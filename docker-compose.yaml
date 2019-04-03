@@ -1,0 +1,53 @@
+version: '2.2'
+services:
+  app:
+    # read_only: true
+    # cpus: '0.50'
+    # mem_limit: '512M'
+    build: .
+    links:
+      - db:mysql
+      - jaeger:tracing
+    ports:
+      - 80:80
+    tmpfs:
+      - /tmp
+    environment:
+      JAEGER: "tracing"
+      WORDPRESS_DB: wordpress
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: wordpress
+    volumes:
+      - ./public_html:/var/www/public_html
+      - ./opencensus.php:/tmp/opencensus.php:ro
+  db:
+    mem_limit: '512M'
+    image: mariadb:10.3
+    tmpfs:
+      - /tmp
+    ports:
+      - 3306
+    volumes:
+      - ./fixtures/mysql:/etc/mysql/conf.d:ro
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_ROOT_PASSWORD: wordpress
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - db:db
+    environment:
+    - PMA_USER=root
+    - PMA_PASSWORD=wordpress
+    ports:
+      - 81:80
+  jaeger:
+    image: jaegertracing/all-in-one:1.11
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "14268:14268"
+      - "9411:9411"
+      - "82:16686"

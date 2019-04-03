@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2129,SC1117
+
+set -e
+
+# Compile and install PHP
+
+add-ppa-repository ondrej/php
+apt install libfcgi0ldbl \
+            php7.2-common \
+            php7.2-cli \
+            php7.2-fpm \
+            php7.2-xml \
+            php7.2-gd \
+            php7.2-dev \
+            php7.2-json \
+            php7.2-mysql \
+            php7.2-opcache \
+            php7.2-curl \
+            php7.2-zip \
+            php7.2-xsl \
+            php7.2-mbstring \
+            php7.2-soap \
+            php7.2-ctype \
+            php7.2-geoip \
+            php7.2-gettext \
+            php7.2-redis \
+            php7.2-igbinary \
+            php7.2-gmp \
+            -y
+
+chown www-data:www-data -R /etc/php
+
+echo "opcache.enable=1" >> /etc/php/7.2/cli/php.ini
+echo "opcache.enable=1" >> /etc/php/7.2/fpm/php.ini
+echo "opcache.lockfile_path=/tmp" >> /etc/php/7.2/fpm/php.ini
+echo "opcache.revalidate_freq=60" >> /etc/php/7.2/fpm/php.ini
+echo "session.save_path=/tmp" >> /etc/php/7.2/cli/php.ini
+echo "session.save_path=/tmp" >> /etc/php/7.2/fpm/php.ini
+echo "sys_temp_dir=/tmp" >> /etc/php/7.2/cli/php.ini
+echo "sys_temp_dir=/tmp" >> /etc/php/7.2/fpm/php.ini
+echo "upload_tmp_dir=/tmp" >> /etc/php/7.2/cli/php.ini
+echo "upload_tmp_dir=/tmp" >> /etc/php/7.2/fpm/php.ini
+
+pecl install opencensus-alpha
+echo "extension=opencensus.so" >> /etc/php/7.2/cli/php.ini
+echo "extension=opencensus.so" >> /etc/php/7.2/fpm/php.ini
+
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php -r "if (hash_file('sha384', 'composer-setup.php') === '48e3236262b34d30969dca3c37281b3b4bbe3221bda826ac6a9a62d6444cdb0dcd0615698a5cbe587c3f0fe57a54d8f5') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php composer-setup.php --install-dir=/sbin/
+php -r "unlink('composer-setup.php');"
