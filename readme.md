@@ -2,7 +2,7 @@
 
 This stack enables you to track performance of any WordPress install.
 
-For more read our article on <https://blog.woocart.com/performance-tracing>.
+For more read our article on <https://blog.woocart.com/the-curious-case-of-slow-wordpress>.
 
 ## Setup
 
